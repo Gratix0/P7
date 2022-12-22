@@ -1,10 +1,11 @@
 import sqlalchemy
 from sqlalchemy import orm
-from .db_session import SqlAlchemyBase
+from .For_db import SqlAlchemyBase
 from sqlalchemy_serializer import SerializerMixin
 
 
 class Product(SqlAlchemyBase, SerializerMixin):
+    "Создаёт модель таблицы для продуктов"
     __tablename__ = 'products'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)

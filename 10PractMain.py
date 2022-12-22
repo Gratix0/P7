@@ -1,21 +1,33 @@
-from data import db_session
-from data.users import Users
+from data import For_db
+from data.UserUser import Users
 from data.product import Product
-
+"Импорты"
 from tabulate import tabulate
 
-db_session.global_init("data/magazine_db.db")
-db_sess = db_session.create_session()
+For_db.global_init("data/ETO_BAZA.db")
+db_sess = For_db.create_session()
 
 
 class User:
+    """Create a user"""
     def __init__(self, id, name, password, role):
+        """
+        Создание экземплера класса
+        :param id: айди
+        :param name: имя
+        :param password: пароль
+        :param role: роль
+        """
         self.id_use = int(id)
         self.name = name
         self.password = password
         self.role = int(role)
 
     def products(self):
+        """
+        Продуктики
+        :return: None
+        """
         prods = db_sess.query(Product)
         headers = []
         haracteristics = []
@@ -33,109 +45,121 @@ class User:
         print(tabulate(haracteristics, headers=headers))
 
     def change_password(self):
-        new_pass = input("Введите новый пароль: ")
+        """
+        Позволяет менять пороль
+        :return: None
+        """
+        new_pass = input("Input a new password: ")
         db_sess.query(Users).filter(Users.id == self.id_use).update(
             {Users.password: new_pass}, synchronize_session=False
         )
         db_sess.commit()
-        print("Готово")
+        print("Done")
 
 
 class Admin(User):
-
+    "Admin role"
     def add_product(self):
+        """
+        Позволяет добавить новый продукт и забить его в бд
+        :return: None
+        """
         try:
             new_prod = Product()
-            new_prod.name = input("ведите название нового продукта: ")
-            new_prod.description = input("Введите описание нового продукта: ")
-            new_prod.postav = input("Введите поставщика: ")
-            new_prod.price = int(input("Введите цену продукта: "))
-            new_prod.count = int(input("Введите количество продукта на складе: "))
+            new_prod.name = input("New product: ")
+            new_prod.description = input("Description: ")
+            new_prod.postav = input("Company: ")
+            new_prod.price = int(input("Price: "))
+            new_prod.count = int(input("finished goods: "))
 
             db_sess.add(new_prod)
             db_sess.commit()
             db_sess.rollback()
 
         except (Exception):
-            print("Что-то пошло не так")
+            print("Error")
 
     def delete(self, id):
         try:
 
             db_sess.query(Product).filter(Product.id == id).delete(synchronize_session=False)
             db_sess.commit()
-            print("Готово")
+            print("Done")
 
         except (Exception):
-            print("Что-то пошло не так")
+            print("Error")
 
     def change_somthing_product(self, id):
+        """
+        Позволяет менять продукт
+        :param id: Айдишник продукта
+        :return: None
+        """
         try:
             prod = db_sess.query(Product).filter(Product.id == id).one()
-            atribute = input("Введите атрибут который хотите поменять у товара: ")
+            atribute = input("choose atribute: ")
 
             if atribute == "description":
-                new = input("Введите новое описание: ")
+                new = input("New description: ")
                 db_sess.query(Product).filter(Product.id == id).update(
                     {Product.description: new}, synchronize_session=False
                 )
                 db_sess.commit()
-                print("Готово")
+                print("Done")
 
-            elif atribute == "postav":
-                new = input("Введите нового поставщика: ")
+            elif atribute == "company":
+                new = input("New company: ")
                 db_sess.query(Product).filter(Product.id == id).update(
                     {Product.postav: new}, synchronize_session=False
                 )
                 db_sess.commit()
-                print("Готово")
+                print("Done")
 
             elif atribute == "count":
-                new = int(input("Введите новое количество: "))
+                new = int(input("New count: "))
                 db_sess.query(Product).filter(Product.id == id).update(
                     {Product.count: new}, synchronize_session=False
                 )
                 db_sess.commit()
-                print("Готово")
+                print("Done")
 
             elif atribute == "price":
-                new = int(input("Введите новую цену: "))
+                new = int(input("New price: "))
                 db_sess.query(Product).filter(Product.id == id).update(
                     {Product.price: new}, synchronize_session=False
                 )
                 db_sess.commit()
-                print("Готово")
+                print("Done")
 
             elif atribute == "name":
-                new = input("Введите новое название: ")
+                new = input("New name: ")
                 db_sess.query(Product).filter(Product.id == id).update(
                     {Product.name: new}, synchronize_session=False
                 )
                 db_sess.commit()
-                print("Готово")
+                print("Done")
 
             else:
-                print("Такого атрибута нет")
-
-
+                print("Error")
         except (Exception):
-            print("Похоже такого товара нету на складе")
+            print("Error")
 
 
 def autorize():
-    name = input("Введите имя: ")
-    password = input("Введите пароль: ")
-    re_passw = input("Повторите пароль: ")
+    """
+    Процесс авторизации
+    :return: None
+    """
+    name = input("Name: ")
+    password = input("Password: ")
+    again_password = input("Again password: ")
 
-    if password == re_passw:
+    if password == again_password:
         try:
-
             user = db_sess.query(Users).filter(Users.password == password and Users.name == name).one()
-
             if user:
                 print('hh')
                 return (user, 1)
-
             else:
                 return (0, 0)
 
@@ -147,13 +171,17 @@ def autorize():
 
 
 def reg():
-    name = input("Введите имя пользователя: ")
-    password = input("Введите пароль: ")
+    """
+    Регистрация нового пользователя с передачей в бд
+    :return: None
+    """
+    name = input("Name: ")
+    password = input("Password: ")
 
     try:
         user = db_sess.query(Users).filter(Users.password == password and Users.name == name).one()
         if str(user.name) == name:
-            print("Такой пользователь уже существует, авторизуйтесь под ним")
+            print("Error")
             return autorize()
 
     except (Exception):
@@ -170,50 +198,64 @@ def reg():
 
 
 def interface_admin(adm):
+    """
+    Реализация интерфейса для админа
+    :param adm:
+    :return: None
+    """
     while (True):
         adm.products()
         print()
-        print("Введите что хотите сделать: 1 - редактировать, 2 - удалить, 3 - добавить: ")
-        inp = int(input("Введите: "))
+        print("Choise: 1 - reduct, 2 - delete, 3 - add: ")
+        inp = int(input("Input: "))
         try:
             if inp == 1:
-                id_of_prod = int(input("Введите ID товара который хотите изменить: "))
+                id_of_prod = int(input("ID product: "))
                 adm.change_somthing_product(id_of_prod)
 
             elif inp == 2:
-                id_of_prod = int(input("Введите ID товара который хотите изменить: "))
+                id_of_prod = int(input(" ID product: "))
                 adm.delete(id_of_prod)
 
             elif inp == 3:
                 adm.Add_User()
 
             else:
-                print("Такого нету")
+                print("Error")
 
         except (Exception):
-            print("Похоже вы ввели не верный код")
+            print("Error")
 
 
 def interface_for_user(use):
+    """
+    Интерфейс для смертных
+    :param use: Данные юзера
+    :return:
+    """
     while (True):
         use.products()
         print()
-        print("Введите что хотите сделать: 1 - изменить пароль: ")
-        inp = int(input("Введите: "))
+        print("Choose: 1 - change pass: ")
+        inp = int(input("inp: "))
         try:
             if inp == 1:
                 use.change_password()
-                print("nice")
+                print("all good")
 
             else:
-                print("Такого нету")
+                print("Error")
 
         except (Exception) as e:
             print(e)
 
 
 def main():
-    print("Что вы хотите сделать: 1 - авторизоваться, 2 - зарегистрироваться")
+    """
+    Основной модуль запускающий весь процесс
+    :return:
+    """
+    print("Choose: 1 - auhth, 2 - sing in")
     inp = int(input())
     if inp == 1:
         res_aut = autorize()
@@ -226,7 +268,7 @@ def main():
                 interface_admin(admin)
 
         else:
-            print("Переделывай")
+            print("Error")
 
     elif inp == 2:
         res_reg = reg()
@@ -239,7 +281,7 @@ def main():
                 interface_admin(admin)
 
         else:
-            print("Переделывай")
+            print("Error")
 
 
 if __name__ == "__main__":
